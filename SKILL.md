@@ -1,82 +1,83 @@
 ---
 name: watchdog
-description: "AI 会话免疫系统 - 环境健康感知，轻触提醒"
+description: "Your session's guard dog — naps when safe, barks when you drift"
 version: 2.0.0
-triggers: [/watchdog, /wd, /btw, watchdog]
+triggers: [/watchdog, /wd, watchdog]
 sandbox_mode: read-only
 timeout_seconds: 60
 priority: 95
 ---
 
-# Watchdog - AI 会话免疫系统
+# Watchdog — Your Session's Guard Dog
 
-基于 Claude Code 的轻量级健康感知识别器。像 `/btw` 一样作为你的 side-channel，随时检测并以极简的 ASCII UI 提醒你当前会话是否偏离目标（漂移）、卡死或丧失上下文。
+A watchdog sits trackside, watching your AI session race.
+Naps when the track is clear. Ears up when something's off. Barks loud when you're drifting. Bites the steering wheel when you've lost control.
 
-## 调用方式
+Zero cost. Zero interruption. Just a dog doing its job.
+
+## How to Call
 
 ```bash
-/btw                            # (或 /watchdog) 极速模式：快速心跳检测，健康时静默
-/watchdog --deep                # 深度模式：调用外部 AI (Gemini/Codex) 出具完整体检报告
-/watchdog --auto --interval 5   # 自动模式：常驻后台定时嗅探
-/watchdog --status              # 查看当前监控雷达状态
-/watchdog --off                 # 召回看门狗（关闭自动监控）
+/watchdog                       # quick sniff — silent if healthy, barks if not
+/watchdog --deep                # full vet checkup (calls external AI)
+/watchdog --auto --interval 5   # guard duty — auto-patrol every N interactions
+/watchdog --report              # full health report with trend history
+/watchdog --status              # is the dog awake?
+/watchdog --off                 # call the dog back (disable auto)
+/watchdog --reset               # fresh start
 ```
 
-## Dual-Mode Architecture
+## Dual Mode
 
 | | Quick Mode (default) | Deep Mode (--deep) |
 |--|---------------------|---------------------|
-| **Evaluator** | Claude self-assessment | External AI (Gemini/Codex) |
-| **Cost** | $0 (reuses current session) | ~$0.03/check |
-| **Latency** | Instant (<2s) | 5-30s |
-| **Output** | Silent / 1-line / 3-line | Full formatted report |
-| **Use case** | Daily monitoring | Deep diagnosis on persistent issues |
+| **Who checks** | The dog itself (self-sniff) | External vet (Gemini/Codex) |
+| **Cost** | $0 | ~$0.03/check |
+| **Speed** | Instant (<2s) | 5-30s |
+| **Output** | Kaomoji one-liner | Full dashboard report |
 
-## 5-Dimension Detection
+## What the Dog Sniffs
 
-| Dimension | Weight | What It Catches |
-|-----------|--------|----------------|
-| STUCK | 25% | No progress, repeated actions, loops |
-| DRIFT | 25% | Deviation from original task |
-| HALLUCINATION | 20% | References to non-existent files/APIs |
-| CONTEXT_DECAY | 15% | Lost context, forgotten constraints |
-| VELOCITY_DROP | 15% | Declining output, inefficient tool use |
+| Scent | Weight | What It Catches |
+|-------|--------|----------------|
+| STUCK | 25% | Going in circles, chewing the same bone |
+| DRIFT | 25% | Wandering off the track |
+| HALLUCINATION | 20% | Chasing phantom squirrels |
+| CONTEXT_DECAY | 15% | Forgetting where the bones are buried |
+| VELOCITY_DROP | 15% | Slowing down, losing the scent |
 
-## 4-Level Severity
+## The Dog's Mood
 
-| Level | Score | Quick Mode Output |
-|-------|-------|------------------|
-| HEALTHY | 0-20 | Complete silence (no interruption) |
-| WARNING | 21-50 | Single-line hint |
-| CRITICAL | 51-80 | 3-line summary |
-| EMERGENCY | 81-100 | Alert + prompt |
+```
+(ᵕ᷄ ᐛ ᵕ᷅)  zzZ...  08 ──🚗── clear track, napping
 
-## Auto Mode
+(ŏ_ŏ  )  woof?  35 ─🚗〰─ tires slipping → steer back
+
+(ง •̀_•́)ง  WOOF! WOOF!  62 〰🚗〰〰
+off the main track! smells like burning hallucinations
+→ pit stop: run --deep to check the route map
+
+(╬ Ò ‸ Ó)  AWOOO—!!  85 💥🚗〰〰
+deadlock wall crash! leash snapped!!
+→ kill the engine NOW! [stop / force continue]
+```
+
+## Auto Mode (Guard Duty)
 
 With `--auto` enabled:
-- **With Ralph**: Piggybacks on Ralph's iteration loop for automatic Quick Checks
-- **Without Ralph**: Claude passively triggers checks every N interactions
-- **Silent when healthy**, gentle nudge when not
-- 2 consecutive WARNINGs → auto-suggests `--deep`
-
-## Output Preview
-
-```
-🐕 35 ⚠️ stuck↗ ctx:78% → consider checkpoint         ← WARNING (1-line)
-
-🐕 62/100 🟠 CRITICAL                                   ← CRITICAL (3-line)
-  stuck:███████░░░ 68 | velocity↘↘
-  → pause, git stash, rethink approach
-```
+- **With Ralph**: Patrols on Ralph's iteration loop
+- **Without Ralph**: Sniffs every N interactions on its own
+- **Silent when healthy** — the best guard dog is the one you forget is there
+- 2 consecutive warnings → suggests `--deep` for a full vet visit
 
 ## Design Principles
 
-- **btw philosophy** — zero interruption, ambient awareness, surfaces only on anomalies
-- **Read-only** — never modifies your code
-- **Zero-cost default** — Quick Mode reuses current session, no extra overhead
-- **Progressive escalation** — Quick → Deep, from lightweight sensing to deep diagnosis
-- **Self-healing suggestions** — tells you what's wrong AND how to fix it
+- **Guard dog, not a dashboard** — personality over numbers
+- **Read-only** — never touches your code, only watches
+- **Zero-cost default** — Quick Mode reuses current session
+- **Progressive escalation** — nap → ears up → bark → bite
+- **Tells you how to fix it** — not just what's wrong, but what to do
 
 ## Troubleshooting
 
-See `modules/troubleshooting.md` for common issues.
+See `modules/troubleshooting.md`.
