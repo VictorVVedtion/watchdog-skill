@@ -1,0 +1,21 @@
+# Watchdog local state (generated at runtime)
+.claude/watchdog.local.json
+.claude/watchdog.log
+
+# Ralph local state
+.claude/ralph-loop.local.md
+.claude/ralph-delta.local.md
+
+# Skillpack execution logs
+.skillpack/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
