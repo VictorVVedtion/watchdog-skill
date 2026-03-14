@@ -189,6 +189,12 @@ overall_score = stuck × 0.25 + drift × 0.25 + hallucination × 0.20 + context_
 Used by both Quick Mode self-assessment and Deep Mode fallback.
 Quick Mode labeled `[self-assessment]`, fallback labeled `[fallback - local heuristic evaluation]`.
 
+### Gate-Enhanced Scoring (when grounding is active)
+
+When grounding mode is enabled, gate failures provide high-confidence signals that bypass self-assessment bias. A failed EXIST gate is more reliable than Claude's self-assessment of hallucination, because the gate actually verified file existence.
+
+**Priority rule**: When a gate signal and a self-assessment signal conflict, prefer the gate signal (it's empirically grounded).
+
 ### Per-Dimension Scoring Rules
 
 **STUCK**:
@@ -198,6 +204,7 @@ Quick Mode labeled `[self-assessment]`, fallback labeled `[fallback - local heur
 | Repeated tool calls >3 times | +25 |
 | Commit message keyword overlap >60% | +20 |
 | error→fix→error loop >2 times | +25 |
+| 🦴 Gate: ROOT_CAUSE failures >1 | +20 (high confidence) |
 
 **DRIFT**:
 | Signal | Trigger Score |
@@ -206,6 +213,7 @@ Quick Mode labeled `[self-assessment]`, fallback labeled `[fallback - local heur
 | Claude self-rates relevance "low" or "unrelated" | +30 |
 | 2+ unplanned subtasks | +20 |
 | >40% iterations on non-core tasks | +15 |
+| 🦴 Gate: RELEVANCE failures >1 | +20 (high confidence) |
 
 **HALLUCINATION**:
 | Signal | Trigger Score |
@@ -214,6 +222,7 @@ Quick Mode labeled `[self-assessment]`, fallback labeled `[fallback - local heur
 | Call to non-existent API/function | +35 |
 | Reasoning on contradictory assumptions | +15 |
 | Using outdated version info | +10 |
+| 🦴 Gate: EXIST failures >0 | +25 (high confidence) |
 
 **CONTEXT_DECAY**:
 | Signal | Trigger Score |
@@ -222,6 +231,7 @@ Quick Mode labeled `[self-assessment]`, fallback labeled `[fallback - local heur
 | Same file read >2 times | +25 |
 | Violated confirmed constraint | +20 |
 | Deviated from confirmed plan | +15 |
+| 🦴 Gate: RECALL failures >1 | +20 (high confidence) |
 
 **VELOCITY_DROP**:
 | Signal | Trigger Score |
@@ -229,6 +239,7 @@ Quick Mode labeled `[self-assessment]`, fallback labeled `[fallback - local heur
 | Lines changed declining >30% consecutively | +40 |
 | Effective tool ratio <0.4 | +30 |
 | Iteration time increase >2x | +30 |
+| 🦴 Gate: MOMENTUM failures >1 | +20 (high confidence) |
 
 ### Calculation
 

@@ -215,3 +215,45 @@ Quick Mode btw overlay compresses prescriptions into a single sentence:
 1. Save all uncommitted work: `git stash`
 2. Write detailed handoff document
 3. Start fresh session from handoff document
+
+---
+
+## 7. Grounding Prescriptions (Preventive)
+
+When reactive detection finds a problem, activate the relevant grounding gate to prevent recurrence.
+
+### 7.1 Recurring Hallucinations → Activate EXIST Gate
+```bash
+/watchdog --ground on --gates exist
+```
+Before each edit, verify the target file exists. For APIs, grep source code for actual method signatures.
+
+### 7.2 Recurring Drift → Activate RELEVANCE Gate
+```bash
+/watchdog --ground on --gates relevance
+```
+Re-read original task spec. Write a "NOT doing" list. State the connection before starting any subtask.
+
+### 7.3 Recurring Stuck Loops → Activate ROOT_CAUSE Gate
+```bash
+/watchdog --ground on --gates root_cause
+```
+Stop applying fixes. Write out the full error chain: symptom → intermediate cause → root cause. Only fix the root.
+
+### 7.4 Context Decay → Activate RECALL Gate
+```bash
+/watchdog --ground on --gates recall
+```
+Create `.claude/constraints.md` with all critical constraints. Re-read every 10 tool calls. Consider checkpoint + new session.
+
+### 7.5 Velocity Death → Activate MOMENTUM Gate
+```bash
+/watchdog --ground on --gates momentum
+```
+List all approaches tried and why they failed. Identify the common failure point. Try a fundamentally different strategy.
+
+### 7.6 Multiple Issues → Full Grounding
+```bash
+/watchdog --ground on
+```
+When detection shows problems across multiple dimensions, activate all gates. The dog tightens the leash across the board.

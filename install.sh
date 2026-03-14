@@ -151,12 +151,13 @@ install_skill() {
     info "Installation complete!"
     echo ""
     echo "  Usage:"
-    echo "    /watchdog              # Quick check (btw-style, zero cost)"
-    echo "    /watchdog --deep       # Deep diagnosis (external AI)"
-    echo "    /watchdog --auto       # Enable ambient monitoring"
+    echo "    /watchdog              # Quick sniff (barks if not healthy)"
+    echo "    /watchdog --ground on  # Activate proactive grounding"
+    echo "    /watchdog --deep       # Full vet checkup (external AI)"
+    echo "    /watchdog --auto       # Guard duty (auto-patrol)"
     echo "    /watchdog --report     # Full report with trends"
-    echo "    /watchdog --status     # Check monitoring status"
-    echo "    /watchdog --reset      # Reset state files"
+    echo "    /watchdog --status     # Is the dog awake?"
+    echo "    /watchdog --reset      # Fresh start"
     echo ""
 }
 
@@ -188,7 +189,7 @@ uninstall_skill() {
 main() {
     echo ""
     echo "  ==========================="
-    echo "  Watchdog Skill v2.0.0"
+    echo "  Watchdog Skill v3.0.0"
     echo "  ==========================="
     echo ""
 

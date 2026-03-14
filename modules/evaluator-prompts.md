@@ -63,6 +63,8 @@ Return strictly the following JSON format with no other text:
   "remediation": ["<specific fix steps for highest-scoring dimension>"]
 }
 
+If grounding gate data is present in the digest, treat gate failures as high-confidence evidence. An EXIST gate failure (file verified as non-existent) is stronger evidence of hallucination than a self-reported phantom reference.
+
 --- Session State Digest ---
 <STATE_DIGEST>
 ```

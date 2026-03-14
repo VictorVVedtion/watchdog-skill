@@ -21,6 +21,8 @@ Extract parameters from user input:
 | `--status` | false | View current monitoring status only |
 | `--off` | false | Disable auto monitoring |
 | `--reset` | false | Reset state files (clear history and logs) |
+| `--ground` | off | Grounding mode: `on` / `off` / `status` |
+| `--gates` | all | Comma-separated gate list: `exist,relevance,root_cause,recall,momentum` |
 
 ### Mode Routing
 
@@ -32,6 +34,9 @@ Extract parameters from user input:
 /watchdog --status     → Status view (no check executed)
 /watchdog --off        → Disable monitoring
 /watchdog --reset      → Reset state
+/watchdog --ground on  → Activate proactive grounding
+/watchdog --ground off → Deactivate grounding
+/watchdog --ground status → Grounding gate statistics
 ```
 
 ### --status Handling
@@ -88,6 +93,68 @@ Watchdog auto mode can optionally leverage Ralph Skill's iteration loop. See `mo
 
 - **With Ralph**: Ralph checks `watchdog.local.json` at each iteration end, triggers when `check_count % interval === 0`
 - **Without Ralph**: `--auto` outputs a note about manual runs, all manual check features work normally
+
+### --ground Handling
+
+**`--ground on`**: Activate grounding mode. Update `watchdog.local.json` with grounding section (see `modules/auto-grounding.md` for schema). Output:
+```
+🦴 grounding ON — gates armed: exist, relevance, root_cause, recall, momentum
+```
+
+**`--ground on --gates exist,relevance`**: Activate only specific gates.
+
+**`--ground off`**: Deactivate grounding. Preserve gate statistics. Output:
+```
+🦴 grounding OFF — stats preserved (15 checks, 3 catches)
+```
+
+**`--ground status`**: Display current gate status:
+```
+🦴 Grounding Status
+mode: auto | leash: tight | gates: exist, root_cause
+checks: 20 | failures: 4 (20%) | alerts shown: 3
+top failure: root_cause (3 fails) — dig deeper
+```
+
+---
+
+## Grounding Mode (v3.0) — The Dog Bites the Leash
+
+When grounding is enabled, Claude internalizes 5 verification gates as reasoning habits. Gates run **silently in Claude's thinking** — only failed gates produce visible output. See `modules/grounding-gates.md` for full gate specifications.
+
+### Core Behavior Rules
+
+1. **Gates are invisible when passing** — the dog is calm, user sees nothing
+2. **Only failed gates produce output** — the dog tugs the leash
+3. **Gate alerts are suggestions, not blocks** — the dog tugs, user can override
+4. **Max 1 gate alert per 5 tool calls** — frequency budget prevents alert fatigue
+5. **Gate failures feed into watchdog scores** — proactive data improves reactive accuracy
+
+### The 5 Gates
+
+| Gate | Icon | Trigger | Prevents |
+|------|------|---------|----------|
+| EXIST | 👃 | Before editing assumed files | Hallucination |
+| RELEVANCE | 🔗 | Before starting tangents | Drift |
+| ROOT_CAUSE | 🦷 | After fixing errors | Stuck loops |
+| RECALL | 🧠 | At context thresholds | Context decay |
+| MOMENTUM | 🐾 | When progress stalls | Velocity death |
+
+### Gate Alert Format (distinct from watchdog check output)
+
+```
+(ŏ_ŏ )🦴👃 src/utils/helper.ts — can't sniff this file. does it exist?
+(ŏ_ŏ )🦴🔗 refactoring auth — is this on the original trail?
+(ŏ_ŏ )🦴🦷 TypeError fix — same bone as last time? dig for the root.
+(ŏ_ŏ )🦴🧠 context ~72% — can you recall the 3 key constraints?
+(ŏ_ŏ )🦴🐾 3 reads, 0 writes — lost the scent? try a different trail.
+```
+
+### Auto-Grounding
+
+When `--auto` and `--ground on` are both active, gates auto-activate/deactivate based on watchdog check results. See `modules/auto-grounding.md` for thresholds and leash modes.
+
+Closed loop: `detect → ground → verify → detect`
 
 ---
 
@@ -273,6 +340,12 @@ Compress D1 signals into a ≤2000 token structured summary:
 - task_drift_indicators: [observed drift]
 - phantom_references: [non-existent files/APIs]
 - velocity_signals: {change_trend, tool_ratio, time_trend}
+
+## Grounding Gate Activity (if active)
+- Gates enabled: <list>
+- Total checks: <N> | Total failures: <N>
+- Gate failures: <gate>: <count> — <targets>
+Note: Gate failures are empirically verified signals. Weight higher than self-assessment.
 ```
 
 ### D3 — External AI Evaluation
@@ -329,6 +402,15 @@ Recommendations:
   • <recommendation_1>
 Remediation:
   • <remediation> (from modules/remediation-playbook.md)
+────────────────────────────────────────────────────
+🦴 Grounding Gates (if active)
+────────────────────────────────────────────────────
+EXIST:      ██░░░  12 checks, 1 fail    👃 active
+ROOT_CAUSE: ████░   8 checks, 3 fail    🦷 active ⚠️
+RELEVANCE:  ░░░░░   — inactive          🔗
+RECALL:     ░░░░░   — inactive          🧠
+MOMENTUM:   ░░░░░   — inactive          🐾
+Leash: TIGHT | Prevented: ~2 potential issues
 ════════════════════════════════════════════════════
 ```
 

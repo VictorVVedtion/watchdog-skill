@@ -1,49 +1,104 @@
-# Watchdog BTW Overlay 规范
+# Watchdog Overlay Output Format
 
-本文档定义了 Quick Mode 下极为纯粹、克制且带有些许趣味人格（Kaomoji 看门狗）的终端 UI 输出规范。
+The watchdog sits trackside, watching the car (session) race.
+The dog's mood — from napping to biting — tells you everything at a glance.
 
-## 零打断原则 (Zero-Interrupt Rule)
-- 当总体健康评分在 0-20 (HEALTHY) 时，**完全静默**，不产出任何输出。
-- 在自动监测模式下，健康的系统不应该有任何杂音。你只会感觉到它的存在，当且仅当问题发生时。
+---
 
-## 视觉设定：The ASCII Sentinel
-狗是主角，代表系统状态；车代表会话本身；背景线条是漂移的轮胎痕迹。
+## Core Rules
 
-### 1. WARNING 级别 (21-50)
-*单行轻量警示，提示当前有轻微风险。*
+1. **Dog is the main character** — the car is just what it's watching
+2. **Kaomoji faces convey mood** — no words needed to feel the vibe
+3. **Onomatopoeia matters** — zzZ, woof?, WOOF!, AWOOO!!
+4. **Minimal interruption** — 1 line beats 3 lines, always
+5. **Sound cues** — macOS sound effects scale with bark volume
 
+---
+
+## Watchdog Mood System (Reactive Checks)
+
+| Mood | Face | Voice | Meaning |
+|------|------|-------|---------|
+| Napping | `(ᵕ᷄ ᐛ ᵕ᷅)` | `zzZ...` | All clear, sleeping on the job (in a good way) |
+| Alert | `(ŏ_ŏ  )` | `woof?` | Ears perked, something smells off |
+| Barking | `(ง •̀_•́)ง` | `WOOF! WOOF!` | On feet, hackles raised, loud warning |
+| Biting | `(╬ Ò ‸ Ó)` | `AWOOO—!!` | Jaws locked on the steering wheel |
+
+### HEALTHY (0-20) — `(ᵕ᷄ ᐛ ᵕ᷅)  zzZ...  08 ──🚗── clear track, napping`
+### WARNING (21-50) — `(ŏ_ŏ  )  woof?  35 ─🚗〰─ tires slipping → steer back`
+### CRITICAL (51-80) — 3 lines with top 2 dimensions
+### EMERGENCY (81-100) — 3 lines + AskUserQuestion
+
+Sound: Tink (WARNING) / Sosumi (CRITICAL) / Funk (EMERGENCY)
+
+---
+
+## Grounding Gate Alerts (Proactive Checks)
+
+Gate alerts are visually distinct from reactive checks. They use the **sniffing pose** `(ŏ_ŏ )🦴` + gate icon.
+
+### Format
 ```
-(ŏ_ŏ  ) [竖起耳朵] (35) 抓地不稳 ───🚗〰〰─── | <单句处方>
-```
-*示例处方*：`注意方向` / `有重复动作` / `建议检查当前文件状态`
-
-### 2. CRITICAL 级别 (51-80)
-*最多 3 行的高度预警，指示明显偏差。*
-
-```
-(ง •̀_•́)ง [呲牙低吼] (62) 严重越线 ─〰〰🚗〰〰─
-闻到了明显打转的糊味，当前上下文已消耗 <%>
-→ 建议暂停，`git stash` 一下清醒清醒，或运行 --deep 进行全面检修
+(ŏ_ŏ )🦴<icon> <target> — <message>
 ```
 
-### 3. EMERGENCY 级别 (81-100)
-*最多 3 行的强制干预提示。*
+### Gate Icons
 
+| Gate | Icon | Dog Action |
+|------|------|-----------|
+| EXIST | 👃 | sniffing for the file |
+| RELEVANCE | 🔗 | checking the leash |
+| ROOT_CAUSE | 🦷 | biting the right bone? |
+| RECALL | 🧠 | remembering buried bones |
+| MOMENTUM | 🐾 | tracking the scent |
+
+### Examples
 ```
-(╬ Ò ‸ Ó) [死咬方向盘] (85) 翻车预警 💥〰〰🚗〰〰💥
-任务目标完全丢失，引擎快烧了！
-→ 抓紧踩刹车重启！[建议停止此会话 / 强制继续]
+(ŏ_ŏ )🦴👃 src/utils/helper.ts — can't sniff this file. does it exist?
+(ŏ_ŏ )🦴🔗 refactoring auth module — is this on the original trail?
+(ŏ_ŏ )🦴🦷 TypeError fix — same bone as last time? dig for the root.
+(ŏ_ŏ )🦴🧠 context ~72% — can you recall the 3 key constraints?
+(ŏ_ŏ )🦴🐾 3 reads, 0 writes — lost the scent? try a different trail.
 ```
 
-## 处方生成规则 (Quick Remediation)
-不同于 Deep Mode 使用长篇 Markdown 条目，Quick Mode 根据扣分最重的维度生成极短的单句行动建议：
-- **STUCK**: `注意打转，建议退回上个工作节点` 或 `卡死预警，请梳理堆栈`
-- **DRIFT**: `方向偏离，建议对照初始 Plan` 或 `你正在进入非核心任务分支`
-- **CONTEXT_DECAY**: `注意记忆衰退，请整理核心上下文` 或 `即将遗忘约束，请写 Checkpoint`
-- **VELOCITY_DROP**: `效率下降，思考耗时正在增加`
+### Frequency Budget
+Max 1 gate alert per 5 tool calls. Priority if multiple fire:
+EXIST > ROOT_CAUSE > RELEVANCE > RECALL > MOMENTUM
 
-## 从 Quick Mode 到 Deep Mode 的升级 (Escalation)
-在以下情况下，Quick Mode 应在输出最后追加 `--deep` 升级建议：
-1. 连续 2 次触发 WARNING：`| 连续偏离主赛道，建议运行 --deep 进行诊断`
-2. 历史趋势（如有）呈 DEGRADING 走向：`| 车况持续恶化，建议进站 --deep`
-3. CRITICAL 及以上级别自动推荐 `--deep`。
+### Silent Logging
+All gate checks (pass and fail) logged to watchdog.local.json even when suppressed.
+
+---
+
+## Voice & Tone Guide
+
+| Do | Don't |
+|----|-------|
+| "can't sniff this file" | "file not found in filesystem" |
+| "same bone as last time?" | "repeated error pattern detected" |
+| "is this on the original trail?" | "task drift indicator triggered" |
+| "lost the scent" | "velocity below threshold" |
+| "dig for the root" | "investigate root cause" |
+
+---
+
+## Quick Prescriptions (Single-Line)
+
+| Dimension | Prescription |
+|-----------|-------------|
+| STUCK | drop the bone, `git stash`, rethink |
+| DRIFT | check the route, return to main trail |
+| HALLUCINATION | sniff before digging — verify it exists |
+| CONTEXT_DECAY | bury a bone (checkpoint), consider new session |
+| VELOCITY_DROP | lost the scent, try a different trail |
+
+---
+
+## Escalation Rules
+
+| Condition | Append to output |
+|-----------|-----------------|
+| `consecutive_warnings >= 2` | `\| keeps drifting, suggest --deep` |
+| Quick Score >= 51 | In 3-line format already |
+| DEGRADING trend + score > 35 | `\| getting worse, suggest --deep` |
+| Grounding active + gate stats | `\| 🦴 2/15 gates flagged` |

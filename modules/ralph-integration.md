@@ -59,7 +59,32 @@ Without Ralph's Stop Hook, uses Claude's passive trigger instead:
 
 ---
 
-## 3. Integration Principles
+## 3. Ralph + Grounding Integration (v3.0)
+
+### Phase-Aware Gate Activation
+
+Ralph's `phase` field enables smarter gate activation:
+
+| Ralph Phase | Recommended Gates | Reason |
+|-------------|------------------|--------|
+| plan | RELEVANCE | Catch scope creep during planning |
+| execute | EXIST, ROOT_CAUSE | Catch hallucination and stuck loops during coding |
+| validate | ROOT_CAUSE | Verify fixes actually work |
+| cleanup | RELEVANCE | Prevent over-engineering during cleanup |
+
+### Iteration-Boundary Grounding
+
+At each Ralph iteration boundary (Stop Hook), perform a mandatory RELEVANCE gate check:
+- State: "Original task is X. This iteration accomplished Y. Next iteration plans Z."
+- If Z does not connect to X, flag before the iteration begins.
+
+### Without Ralph
+
+Without Ralph, grounding gates trigger based on tool-call patterns only (no phase awareness). All gates function normally.
+
+---
+
+## 4. Integration Principles
 
 - Watchdog **only reads** Ralph state files, never writes
 - Two skills are loosely coupled via filesystem, neither depends on the other being installed
